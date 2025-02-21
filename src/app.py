@@ -26,13 +26,46 @@ def sitemap():
     return generate_sitemap(app)
 
 
-@app.route('/members', methods=['GET'])
+@app.route('/members', methods=['GET', 'POST'])
 def handle_hello():
     # This is how you can use the Family datastructure by calling its methods
     response_body = {}
-    members = jackson_family.get_all_members()
-    response_body ["hello"] = "world",
-    response_body ["family"] = members
+    if request.method == 'GET':
+        members = jackson_family.get_all_members()
+        response_body ["hello"] = "world"
+        response_body ["family"] = members
+        return response_body, 200
+    if request.method == 'POST':
+        data = request.json
+        jackson_family.add_member(data)
+        members = jackson_family.get_all_members()
+        response_body ["message"] = "new member"
+        response_body ["family"] = members
+        return response_body, 200
+
+
+@app.route('/members/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+def member(id):
+    response_body = {}
+    if request.method == 'GET':
+        row = jackson_family.get_member(id)
+        if row:
+            response_body["results"] = row
+            return response_body, 200
+        response_body['message'] = "Does not exist"
+        return response_body, 400
+    if request.method == 'PUT':
+        response_body['message'] = "Put response"
+        return response_body, 200
+    if request.method == 'DELETE':
+        rows = jackson_family.delete_member(id)
+        response_body['message'] = "Delete response"
+        response_body['results'] = rows
+        return response_body, 200
+
+
+    print(id)
+    response_body["message"] = f'Response id: {id}'
     return response_body, 200
 
 
